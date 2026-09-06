@@ -17,7 +17,6 @@ from codebreaker import evaluate_guess, generate_secret, play_game, validate_gue
 def test_validate_guess(guess, expected):
     assert validate_guess(guess) == expected
 
-
 @pytest.mark.parametrize(
     ("secret", "guess", "expected"),
     [
