@@ -1,39 +1,34 @@
-"""Консольная игра «Взломщик кода» на 10 ходов.
-
-Игрок должен угадать секрет из четырёх разных цифр. После каждого хода
-программа сообщает число «быков» (цифра и позиция угаданы) и «коров»
-(цифра есть в коде, но стоит на другой позиции).
-"""
+"""Консольная игра «Взломщик кода» («Быки и коровы»)."""
 
 from __future__ import annotations
 
 import random
 from collections.abc import Callable
 
-
 CODE_LENGTH = 4
 MAX_TURNS = 10
+DIGITS = "0123456789"
 
 
 def generate_secret(rng: random.Random | None = None) -> str:
-    """Создать секретный код из четырёх неповторяющихся цифр."""
+    """Вернуть код из четырёх неповторяющихся десятичных цифр."""
     generator = rng or random.Random()
-    return "".join(generator.sample("0123456789", CODE_LENGTH))
+    return "".join(generator.sample(DIGITS, CODE_LENGTH))
 
 
 def validate_guess(guess: str) -> tuple[bool, str]:
-    """Проверить введённый код и вернуть результат с пояснением."""
+    """Проверить пользовательский ввод и вернуть результат с пояснением."""
     if len(guess) != CODE_LENGTH:
         return False, "Введите ровно 4 цифры."
-    if not guess.isdigit():
-        return False, "Код должен состоять только из цифр."
+    if not guess.isascii() or not guess.isdigit():
+        return False, "Код должен состоять только из цифр от 0 до 9."
     if len(set(guess)) != CODE_LENGTH:
         return False, "Цифры в коде не должны повторяться."
     return True, ""
 
 
 def evaluate_guess(secret: str, guess: str) -> tuple[int, int]:
-    """Вернуть количество быков и коров для корректной попытки."""
+    """Подсчитать быков (место совпало) и коров (совпала только цифра)."""
     bulls = sum(expected == actual for expected, actual in zip(secret, guess))
     cows = len(set(secret) & set(guess)) - bulls
     return bulls, cows
@@ -44,10 +39,10 @@ def play_game(
     input_func: Callable[[str], str] = input,
     output_func: Callable[[str], None] = print,
 ) -> bool:
-    """Провести игру и вернуть True при победе, иначе False.
+    """Провести игру: вернуть True при победе и False после 10 неудач.
 
-    Некорректный ввод не расходует ход. Передача ``secret`` и функций
-    ввода/вывода делает игровой сценарий полностью проверяемым в тестах.
+    Передача секрета и функций ввода/вывода позволяет тестировать сценарий
+    без ручного ввода. Некорректная попытка не расходует ход.
     """
     secret = secret or generate_secret()
 
@@ -74,8 +69,11 @@ def play_game(
     output_func(f"Ходы закончились. Секретный код: {secret}.")
     return False
 
+
 def main() -> None:
     """Запустить игру из командной строки."""
     play_game()
+
+
 if __name__ == "__main__":
     main()
